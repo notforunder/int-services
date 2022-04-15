@@ -1,4 +1,3 @@
-
 import os
 from pyfiglet import Figlet 
 import requests
@@ -66,7 +65,7 @@ def main():
     banner = Figlet(font='doom')
     print(banner.renderText('SERVICES'))
     service_table()
-    print('\n by zirxayd)
+    print('\n by zirxayd')
     __menu()
 
 if __name__ == '__main__':
