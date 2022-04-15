@@ -1,73 +1,41 @@
-
 import os
-from pyfiglet import Figlet 
+import sys
 import requests
+import threading
 from prettytable import PrettyTable
-import default_urls as us
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+class Services():
+    def __init__(self, input_file):
+        self.input_file = input_file
 
-bc = bcolors
-clear = lambda: os.system('cls')
-list = us.list
+    def get_urls(self):
+        with open(self.input_file, "r") as f:
+            return f.read().splitlines()
 
-def url_append():
-    print(bc.WARNING + '[!] Example: https://example.com' + bc.ENDC)
-    url = input('Put URL: ')
-    list.append(url)
-    main()
+    def table_data(self):
+        urls = self.get_urls()
+        table = PrettyTable(["URL", "Status Code"])
+        for url in urls:
+            try:
+                response = requests.get(url)
+                table.add_row([url, response.status_code])
+            except requests.exceptions.ConnectionError:
+                table.add_row([url, "Connection Error"])
+        return table
 
-def url_delete():
-    print(bc.WARNING + '[!] Example: 0\n[!] Will delete first line and -1 will delete last line' + bc.ENDC)
-    for i in list:
-        print(i)
-    choice = input('Choose line: ')
-    del list[int(choice)]    
-    main()
-
-def service_table():
-    print('Services')
-    table = PrettyTable()
-    table.field_names = [bc.BOLD + 'Service', 'Status_Code' + bc.ENDC]
-    for i in list:
-        try:
-            status = str(requests.get(i))
-            table.add_row([i + '\n--', bc.OKGREEN + 'Passed' + bc.ENDC + '\n--'])
-        
-        except requests.exceptions.ConnectionError:
-            table.add_row([i + '\n--', bc.FAIL + 'Error' + bc.ENDC + '\n--'])
-    print(table)
-
-
-def __menu():
-    print('[1] Append new service\n[2] Delete service\n[Q] Quit')
-    choice = input('Enter: ')
-    if choice == "1":
-        print("Append")
-        url_append()
-    elif choice == "2":
-        print("Deleting")
-        url_delete()
-    elif choice == "q" or "Q":
-        exit
+    def refresh_table(self, interval):
+        timer = threading.Event()
+        while True:
+            os.system("clear")
+            print(self.table_data())
+            timer.wait(interval)
+            self.table_data()
 
 
 def main():
-    clear()
-    banner = Figlet(font='doom')
-    print(banner.renderText('SERVICES'))
-    service_table()
-    print('\n by zirxayd)
-    __menu()
+    services = Services(sys.argv[1])
+    output = services.refresh_table(2) # 2 seconds refresh
+    print(output)
 
 if __name__ == '__main__':
     main() 
